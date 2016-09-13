@@ -4,6 +4,8 @@
 
 #include "DynamicString.h"
 
+#define TEST_NUMBE  100
+
 typedef enum {
   HEAP_OK,
   HEAP_FAIL
@@ -12,29 +14,58 @@ typedef enum {
 HEAP_RETURN_CODE heap_insert(DArray* heapArray, int heapSize, int insertData);
 HEAP_RETURN_CODE heap_delete(DArray* heapArray, int heapSize, int* returnData);
 HEAP_RETURN_CODE heap_sort(DArray* heapArray, int heapSize);
+HEAP_RETURN_CODE heap_perDown(DArray* heapArray, int element_idx);
 
 void swap(int *src, int *dst);
 void printArray(DArray *input);
 void testDArray();
+void testInsertAndDelete();
+void testBuildHeap();
 int minChild(DArray* heapArray, int idx);
 
 int main(int argc, char** argv){
+  
+  testBuildHeap();
+  return 0;
+}
+
+void testBuildHeap(){
+  
   DArray *input = ArrayNew();
   int idx = 0;
   int a = 0;
 
   srand(time(NULL));
-  for(idx = 0; idx < 20; idx++){
-    heap_insert(input, input->len, (rand()%20)+1);
+  for(idx = 0; idx < TEST_NUMBE; idx++){
+    ArrayAppend(input, (rand()%100)+1);
   }
   printArray(input);
 
-  for(idx = 0; idx < 20; idx++){
+  heap_sort(input, input->len);
+  printArray(input);
+
+  for(idx = 0; idx < TEST_NUMBE; idx++){
     heap_delete(input, input->len, &a);
     printf("Pop : %d \n", a);
   }
+}
 
-  return 0;
+void testInsertAndDelete(){
+
+  DArray *input = ArrayNew();
+  int idx = 0;
+  int a = 0;
+
+  srand(time(NULL));
+  for(idx = 0; idx < TEST_NUMBE; idx++){
+    heap_insert(input, input->len, (rand()%100)+1);
+  }
+  printArray(input);
+
+  for(idx = 0; idx < TEST_NUMBE; idx++){
+    heap_delete(input, input->len, &a);
+    printf("Pop : %d \n", a);
+  }
 }
 
 void testDArray(){
@@ -47,22 +78,22 @@ void testDArray(){
     return;
   }
 
-  for(idx = 0; idx < 10; idx++){
+  for(idx = 0; idx < TEST_NUMBE; idx++){
     ArrayAppend(input, idx);
     printArray(input); 
   }
   
-  for(idx = 0; idx < 15; idx++){
+  for(idx = 0; idx < TEST_NUMBE; idx++){
     printf("Pop : %d \n", ArrayPopFirst(input));
     printArray(input);
   }
 
-  for(idx = 0; idx < 10; idx++){
+  for(idx = 0; idx < TEST_NUMBE; idx++){
     ArrayAppend(input, idx);
     printArray(input); 
   }
 
-  for(idx = 0; idx < 15; idx++){
+  for(idx = 0; idx < TEST_NUMBE; idx++){
     printf("Pop : %d \n", ArrayPopFirst(input));
     printArray(input);
   }
@@ -82,10 +113,23 @@ void printArray(DArray *input){
   return;
 }
 
+void swap(int *src, int *dst){
+  int temp = 0;
+
+  if( src != NULL && dst != NULL){
+    temp = *src;
+    *src = *dst;
+    *dst = temp;
+  } else {
+    printf("Swap fail ... \n");
+  }
+
+  return;
+}
+
 HEAP_RETURN_CODE heap_insert(DArray* heapArray, int heapSize, int insertData){
   HEAP_RETURN_CODE rc = HEAP_FAIL;
   int idx = 0, child_idx = 0;
-  int tmp = 0;
   
   if( heapArray == NULL ){
     return HEAP_FAIL;
@@ -98,11 +142,8 @@ HEAP_RETURN_CODE heap_insert(DArray* heapArray, int heapSize, int insertData){
   child_idx = heapArray->len;
   while(idx){
     
-    tmp = heapArray->s[idx];
-    if( heapArray->s[child_idx] < tmp ){
-      //swap( &heapArray->s[idx], &heapArray->s[heapArray->len] );
-      heapArray->s[idx] = heapArray->s[child_idx];
-      heapArray->s[child_idx] = tmp;
+    if( heapArray->s[child_idx] < heapArray->s[idx] ){
+      swap( &heapArray->s[idx], &heapArray->s[child_idx] );
     }
 
     child_idx = child_idx / 2;
@@ -114,11 +155,9 @@ HEAP_RETURN_CODE heap_insert(DArray* heapArray, int heapSize, int insertData){
 
 HEAP_RETURN_CODE heap_delete(DArray* heapArray, int heapSize, int* returnData){
   HEAP_RETURN_CODE rc = HEAP_FAIL;
-  int idx = 1;
-  int tmp = 0;
-  int mc = 0;
 
   if(heapArray == NULL || heapSize == 0){
+    *returnData = -1;
     return HEAP_FAIL;
   }
 
@@ -126,13 +165,26 @@ HEAP_RETURN_CODE heap_delete(DArray* heapArray, int heapSize, int* returnData){
   heapArray->s[1] = heapArray->s[heapArray->len];
   heapArray->len--;
 
+  heap_perDown(heapArray, 1);
+
+  return HEAP_OK;
+}
+
+HEAP_RETURN_CODE heap_perDown(DArray* heapArray, int element_idx){
+
+  HEAP_RETURN_CODE rc = HEAP_FAIL;
+  int idx = element_idx;
+  int mc = 0;
+
+  if(heapArray == NULL){
+    return HEAP_FAIL;
+  }
+
   while( (idx*2) <= heapArray->len ){
 
     mc = minChild(heapArray, idx);
     if( heapArray->s[idx] > heapArray->s[mc] ){
-      tmp = heapArray->s[mc];
-      heapArray->s[mc] = heapArray->s[idx];
-      heapArray->s[idx] = tmp;
+      swap( &heapArray->s[mc], &heapArray->s[idx] );
     }
 
     idx = mc;
@@ -141,7 +193,15 @@ HEAP_RETURN_CODE heap_delete(DArray* heapArray, int heapSize, int* returnData){
   return HEAP_OK;
 }
 
-HEAP_RETURN_CODE heap_sort(DArray* heapArray, int heapSize);
+HEAP_RETURN_CODE heap_sort(DArray* heapArray, int heapSize){
+  int idx = heapArray->len / 2;
+  
+  while(idx > 0){
+    
+    heap_perDown(heapArray, idx);
+    idx = idx - 1;
+  }
+}
 
 
 int minChild(DArray* heapArray, int idx){
