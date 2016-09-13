@@ -4,7 +4,7 @@
 
 #include "DynamicString.h"
 
-#define TEST_NUMBE  100
+#define TEST_NUMBE  10
 
 typedef enum {
   HEAP_OK,
@@ -25,13 +25,15 @@ int minChild(DArray* heapArray, int idx);
 
 int main(int argc, char** argv){
   
-  testBuildHeap();
+  //testBuildHeap();
+  //testInsertAndDelete();
+  testDArray();
   return 0;
 }
 
 void testBuildHeap(){
   
-  DArray *input = ArrayNew();
+  DArray *input = ArrayNewHeap(MAX_HEAP);
   int idx = 0;
   int a = 0;
 
@@ -52,7 +54,7 @@ void testBuildHeap(){
 
 void testInsertAndDelete(){
 
-  DArray *input = ArrayNew();
+  DArray *input = ArrayNewHeap(MAX_HEAP);
   int idx = 0;
   int a = 0;
 
@@ -70,7 +72,7 @@ void testInsertAndDelete(){
 
 void testDArray(){
 
-  DArray *input = ArrayNew();
+  DArray *input = ArrayNewHeap(MAX_HEAP);
   int idx = 0;
   
   if( input == NULL ){
@@ -142,7 +144,8 @@ HEAP_RETURN_CODE heap_insert(DArray* heapArray, int heapSize, int insertData){
   child_idx = heapArray->len;
   while(idx){
     
-    if( heapArray->s[child_idx] < heapArray->s[idx] ){
+    //if( heapArray->s[child_idx] < heapArray->s[idx] ){
+    if( heapArray->heap_handler(&heapArray->s[child_idx], &heapArray->s[idx]) ){
       swap( &heapArray->s[idx], &heapArray->s[child_idx] );
     }
 
@@ -183,7 +186,8 @@ HEAP_RETURN_CODE heap_perDown(DArray* heapArray, int element_idx){
   while( (idx*2) <= heapArray->len ){
 
     mc = minChild(heapArray, idx);
-    if( heapArray->s[idx] > heapArray->s[mc] ){
+    //if( heapArray->s[idx] > heapArray->s[mc] ){
+    if(heapArray->heap_handler(&heapArray->s[mc], &heapArray->s[idx]) ){
       swap( &heapArray->s[mc], &heapArray->s[idx] );
     }
 
@@ -210,7 +214,8 @@ int minChild(DArray* heapArray, int idx){
   if( (idx * 2 + 1) > currentSize){
     return idx*2;
   } else {
-    if( heapArray->s[idx*2] < heapArray->s[idx*2+1] ){
+    //if( heapArray->s[idx*2] < heapArray->s[idx*2+1] ){
+    if( heapArray->heap_handler(&heapArray->s[idx*2], &heapArray->s[idx*2+1]) ){
       return idx * 2;
     } else {
       return idx * 2 + 1;

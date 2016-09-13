@@ -6,6 +6,8 @@ DString *StrNew() {
   str->s[0] = '\0';
   str->len = 0;
   str->size = 1;
+
+  return str;
 }
 
 void StrAppend(DString *str, char *s) {
@@ -31,6 +33,28 @@ DArray *ArrayNew() {
   array->s[1] = 0;
   array->len = 0;
   array->size = 2;
+
+  return array;
+}
+
+DArray* ArrayNewHeap(int type){
+  DArray *array = ArrayNew();
+
+  if( type == MAX_HEAP ){
+    array->heap_handler = maxHeap;
+  } else if( type == MIN_HEAP ){
+    array->heap_handler = minHeap;
+  }
+
+  return array;
+}
+
+int maxHeap(int* a, int* b){
+  return ( *a > *b )? 1 : 0;
+}
+
+int minHeap(int* a, int* b){
+  return ( *a < *b )? 1 : 0;
 }
 
 void ArrayAppend(DArray *str, int s) {
